@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oriental Merchants, Inc. — Special Price List Dashboard</title>
+<style>
+  :root{
+    --maroon:#8b1e22; --maroon-dk:#6e1519; --cream:#f8f3ea; --sand:#efe5d4;
+    --card:#fcf7ef; --gold:#f5d27a; --ink:#2b1a14; --muted:#7a6a60; --line:#e3d6c2;
+    --warn-bg:#fbe9d3; --warn:#9a5a12; --ok:#2f6b3a;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--cream)}
+  header.top{background:#fff;border-bottom:1px solid var(--line);padding:14px 32px;display:flex;align-items:center;gap:24px;position:sticky;top:0;z-index:5}
+  .wordmark{font-family:var(--serif);color:var(--maroon);font-weight:700;line-height:1;border:2px solid var(--maroon);padding:6px 10px;font-size:14px;letter-spacing:.5px}
+  nav.tabs{display:flex;gap:6px;margin-left:auto}
+  nav.tabs button{border:1px solid var(--maroon);background:#fff;color:var(--maroon);padding:8px 14px;border-radius:4px;font-weight:600;cursor:pointer}
+  nav.tabs button.active{background:var(--maroon);color:#fff}
+  main{max-width:1240px;margin:0 auto;padding:28px 32px 60px}
+  .eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--maroon);font-weight:700}
+  h1,h2{font-family:var(--serif);font-weight:400;margin:6px 0 14px}
+  h1{font-size:40px;color:var(--maroon-dk)} h2{font-size:26px}
+  section.view{display:none} section.view.active{display:block}
+
+  /* KPIs */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0 24px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px}
+  .kpi .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .kpi .val{font-family:var(--serif);font-size:32px;color:var(--maroon);margin-top:6px}
+  .kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}
+  .panel h3{margin:0 0 12px;font-size:15px}
+  .bar-row{display:grid;grid-template-columns:150px 1fr 40px;align-items:center;gap:10px;font-size:13px;margin:7px 0}
+  .bar-row .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar{height:14px;background:var(--sand);border-radius:3px;overflow:hidden}
+  .bar > span{display:block;height:100%;background:var(--maroon)}
+  .bar-row .n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+  .checks li{margin:6px 0;font-size:13.5px}
+  .checks .bad{color:var(--maroon);font-weight:600} .checks .good{color:var(--ok);font-weight:600}
+
+  /* Hero (catalog) */
+  .hero{display:grid;grid-template-columns:1.3fr 1fr;gap:28px;background:var(--sand);border-radius:10px;padding:32px;margin-bottom:28px}
+  @media(max-width:860px){.hero{grid-template-columns:1fr}}
+  .hero p{color:var(--muted);max-width:440px}
+  .offer-box{background:var(--maroon);color:#fff;border-radius:8px;padding:24px}
+  .offer-box .big{font-family:var(--serif);font-size:44px;font-weight:700;line-height:1.05;margin:6px 0 10px}
+  .offer-box p{color:#f3d9d9}
+  .btn{display:inline-block;border:0;border-radius:4px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:14px}
+  .btn.primary{background:var(--maroon);color:#fff} .btn.gold{background:var(--gold);color:var(--ink)}
+  .btn.ghost{background:#fff;color:var(--maroon);border:1px solid var(--maroon)}
+
+  .filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin:12px 0}
+  @media(max-width:700px){.filters{grid-template-columns:1fr}}
+  input[type=search],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:14px}
+  .pills{display:flex;gap:8px;margin:8px 0}
+  .pills button{padding:8px 12px;border:1px solid var(--maroon);background:#fff;color:var(--maroon);border-radius:4px;font-weight:600;cursor:pointer}
+  .pills button.active{background:var(--maroon);color:#fff}
+  .notice{background:var(--warn-bg);border:1px solid #f0d2a8;border-radius:4px;padding:10px 14px;font-size:13px;margin:10px 0}
+  .count{font-size:13px;color:var(--muted);margin:12px 0}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .card{background:var(--card);border:1.5px solid var(--maroon);border-radius:6px;padding:14px;display:flex;flex-direction:column;min-height:190px}
+  .tag{align-self:flex-start;background:var(--maroon);color:#fff;font-size:12px;font-weight:700;padding:4px 8px;border-radius:3px;margin-bottom:8px}
+  .tag.disc{background:#fff;color:var(--maroon);border:1px solid var(--maroon)}
+  .brand{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--maroon);font-weight:700}
+  .pname{font-weight:600;font-size:14px;margin:6px 0 4px}
+  .code{font-size:11px;color:var(--muted)}
+  .chip{align-self:flex-start;background:var(--warn-bg);color:var(--warn);font-size:11px;padding:3px 7px;border-radius:3px;margin-top:6px}
+  .price{font-family:var(--serif);color:var(--maroon);font-size:24px;font-weight:700;margin-top:auto;padding-top:12px}
+  .price small{display:block;font-family:var(--sans);font-size:11px;color:var(--muted);font-weight:400}
+
+  /* Data tab */
+  table{width:100%;border-collapse:collapse;background:#fff;font-size:13px}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{background:var(--sand);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.dup td{background:#fdecec}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+  .help{font-size:13px;color:var(--muted)}
+  code{background:var(--sand);padding:1px 5px;border-radius:3px}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+
+  /* Scanner */
+  .scan-btn{background:var(--gold);color:var(--ink);border:0;padding:8px 14px;border-radius:4px;font-weight:700;cursor:pointer;margin-left:6px}
+  .modal{position:fixed;inset:0;background:rgba(30,10,8,.6);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+  .modal.open{display:flex}
+  .sheet{background:#fff;border-radius:10px;width:100%;max-width:460px;padding:18px;max-height:95vh;overflow:auto}
+  .sheet h3{margin:0 0 4px;font-family:var(--serif);font-weight:400;font-size:22px}
+  .viewer{position:relative;background:#111;border-radius:8px;overflow:hidden;aspect-ratio:1/1;margin:12px 0}
+  .viewer video{width:100%;height:100%;object-fit:cover;display:block}
+  .viewer .frame{position:absolute;inset:18%;border:3px solid var(--gold);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+  .viewer .status{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font-size:12px;padding:6px 10px;text-align:center}
+  .scan-row{display:flex;gap:8px;margin:8px 0}
+  .scan-row input{flex:1;padding:9px 10px;border:1px solid var(--line);border-radius:4px;font-size:14px}
+  .result{margin-top:10px}
+  .result .card{min-height:0}
+  .miss{background:#fdecec;border:1px solid #f0b8b8;color:var(--maroon);padding:10px;border-radius:4px;font-size:13px}
+  .card.flash{animation:flash 1.6s ease 2}
+  @keyframes flash{50%{box-shadow:0 0 0 4px var(--gold)}}
+  .history{font-size:12px;color:var(--muted);margin-top:10px}
+  .history span{display:inline-block;background:var(--sand);padding:2px 6px;border-radius:3px;margin:2px;cursor:pointer}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wordmark">ORIENTAL<br>MERCHANTS<br>INC.</div>
+  <div>
+    <div class="eyebrow">Special Price List</div>
+    <div style="font-size:12px;color:var(--muted)" id="lastUpdated"></div>
+  </div>
+  <button class="scan-btn" id="openScan" style="margin-left:auto">📷 Scan</button>
+</header>
+
+<main>
+
+  <!-- CATALOG (storefront) -->
+  <section class="view active" id="catalog">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Oriental Merchants, Inc. • Special Price List</div>
+        <h1>Great tastes.<br>Better prices.</h1>
+        <p>Explore imported pantry favorites, seasonings, pasta, oils and more at special wholesale prices.</p>
+        <button class="btn primary" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">Discover the offers ↓</button>
+      </div>
+      <div class="offer-box">
+        <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase">Featured special offers</div>
+        <div class="big">Buy 1,<br>Take 1</div>
+        <p id="b1t1Blurb"></p>
+        <button class="btn gold" onclick="setOffer('B1T1');document.getElementById('shop').scrollIntoView({behavior:'smooth'})">Explore Buy 1, Take 1 offers →</button>
+      </div>
+    </div>
+
+    <div id="shop">
+      <div class="eyebrow">Shop the selection</div>
+      <h2>Discounted prices</h2>
+      <div class="pills">
+        <button data-offer="ALL" class="active">All products</button>
+        <button data-offer="B1T1">Buy 1, Take 1</button>
+        <button data-offer="NEAR">Near expiry only</button>
+      </div>
+      <div class="filters">
+        <input type="search" id="q" placeholder="Search product, brand or item code">
+        <select id="brandSel"><option value="">All brands</option></select>
+        <select id="sortSel">
+          <option value="featured">Featured offers first</option>
+          <option value="priceAsc">Price: low to high</option>
+          <option value="priceDesc">Price: high to low</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+      <div class="notice">Selected near-expiry items are listed under 0–3 months to expiry in the source price list. Confirm exact expiry dates and availability before purchasing.</div>
+      <div class="count" id="count"></div>
+      <div class="cards" id="cards"></div>
+    </div>
+  </section>
+</main>
+
+<!-- SCANNER MODAL -->
+<div class="modal" id="scanModal">
+  <div class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:start">
+      <div><div class="eyebrow">Product lookup</div><h3>Scan QR or barcode</h3></div>
+      <button class="btn ghost" id="closeScan" style="padding:6px 10px">✕</button>
+    </div>
+    <div class="viewer">
+      <video id="video" playsinline muted></video>
+      <div class="frame"></div>
+      <div class="status" id="scanStatus">Starting camera…</div>
+    </div>
+    <div class="scan-row">
+      <button class="btn ghost" id="camBtn">Switch camera</button>
+      <label class="btn ghost" style="flex:1;text-align:center">Scan from photo<input type="file" id="imgIn" accept="image/*" hidden></label>
+    </div>
+    <div class="scan-row">
+      <input id="manual" placeholder="Or type item code / barcode (e.g. IMP001015)">
+      <button class="btn primary" id="manualGo">Find</button>
+    </div>
+    <div class="result" id="scanResult"></div>
+    <div class="history" id="scanHistory"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- Sample data (from the current page screenshot) ---------- */
+const SAMPLE = [{"item_code": "IMP001015", "brand": "Garcia Baquero", "name": "Garcia Baquero Iberico Cheese 150g", "price": 405.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Cheese", "barcode": ""}, {"item_code": "IMP001013", "brand": "Garcia Baquero", "name": "Garcia Baquero Manchego Cheese 150g", "price": 710.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Cheese", "barcode": ""}, {"item_code": "IMP001600", "brand": "Garcia Baquero", "name": "Garcia Baquero Queso Oveja Reserva Con Trufa Cuñav 200g", "price": 669.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Cheese", "barcode": ""}, {"item_code": "IMP001598", "brand": "Garcia Baquero", "name": "Garcia Baquero Queso Reserva Al Pximenez Cuñav 200g", "price": 640.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Cheese", "barcode": ""}, {"item_code": "IMP001601", "brand": "Garcia Baquero", "name": "Garcia Baquero Queso Viva España Con Trufa 150g", "price": 408.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Cheese", "barcode": ""}, {"item_code": "IMP001492", "brand": "Jules Destrooper", "name": "Jules Destrooper Butter Crisps w/ Salted Caramel 100g", "price": 288.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Biscuits", "barcode": ""}, {"item_code": "IMP000095", "brand": "Robo", "name": "Robo Mushroom Broth & Seasoning 500g", "price": 697.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Seasoning", "barcode": ""}, {"item_code": "IMP000095", "brand": "Ybarra", "name": "Ybarra Balsamic Vinegar 250 ml", "price": 189.0, "offer": "B1T1", "expiry": "Near expiry", "category": "Oils & Vinegar", "barcode": ""}, {"item_code": "IMP001565", "brand": "Carmencita", "name": "Carmencita Paella Kit Meat & Chorizo 265g", "price": 485.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001554", "brand": "Carmencita", "name": "Carmencita Bacon Seasoning 13.5g case 3 sachets", "price": 85.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001551", "brand": "Carmencita", "name": "Carmencita Barbecue Oven Baked, 57g", "price": 130.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000149", "brand": "Carmencita", "name": "Carmencita Black Pepper 50g", "price": 260.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000150", "brand": "Carmencita", "name": "Carmencita Black Pepper with Lemon 40g", "price": 236.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001448", "brand": "Carmencita", "name": "Carmencita Black Pepper&Mediterranian Sea Salt 65g", "price": 249.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001451", "brand": "Carmencita", "name": "Carmencita Black Pepper&Mediterranian SeaSalt 225g", "price": 573.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001174", "brand": "Carmencita", "name": "Carmencita Botanical Gin&Tonic 16g", "price": 278.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001183", "brand": "Carmencita", "name": "Carmencita camomile 10ud. 12g", "price": 55.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001184", "brand": "Carmencita", "name": "Carmencita camomile w/ mint 10ud. 13g", "price": 60.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001431", "brand": "Carmencita", "name": "Carmencita Camomile with Honey 13g", "price": 85.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001407", "brand": "Carmencita", "name": "Carmencita Chai Tea and Spices 20g", "price": 75.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000158", "brand": "Carmencita", "name": "Carmencita Chicken and White Meats Seasoning 70g", "price": 241.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001561", "brand": "Carmencita", "name": "Carmencita Crepes 170g PET", "price": 198.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001413", "brand": "Carmencita", "name": "Carmencita Crystallized Stevia 315g", "price": 385.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001552", "brand": "Carmencita", "name": "Carmencita CurryOven Baked, 40g", "price": 140.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001336", "brand": "Carmencita", "name": "Carmencita Giant Mediterranean Mix Grinder 190g", "price": 400.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001360", "brand": "Carmencita", "name": "Carmencita Giant Mixed Peppercorn 145g", "price": 580.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001330", "brand": "Carmencita", "name": "Carmencita Giant Sea Salt with Herbs Grinder 328g", "price": 369.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001022", "brand": "Carmencita", "name": "Carmencita Giant Tellicherry 190g", "price": 616.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001186", "brand": "Carmencita", "name": "Carmencita ginger w/ honey tea 10 ud. 15g", "price": 85.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001454", "brand": "Carmencita", "name": "Carmencita Ginger w/ Turmeric & Cinnamon 15g", "price": 85.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001546", "brand": "Carmencita", "name": "Carmencita Golden Milk 42g Glass Jar", "price": 155.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001408", "brand": "Carmencita", "name": "Carmencita Good Night Tea 16g", "price": 65.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000152", "brand": "Carmencita", "name": "Carmencita Green Pepper 30g", "price": 292.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001187", "brand": "Carmencita", "name": "Carmencita Green Tea 15g", "price": 60.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000144", "brand": "Carmencita", "name": "Carmencita Ground Saffron 0.375g", "price": 254.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001560", "brand": "Carmencita", "name": "Carmencita himalayan Fine Back Salt 190g PET", "price": 150.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001559", "brand": "Carmencita", "name": "Carmencita himalayan Fine Pink Salt 190g PET", "price": 125.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001398", "brand": "Carmencita", "name": "Carmencita Himalayan Pink Salt & 3 Peppers 312g", "price": 392.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001148", "brand": "Carmencita", "name": "Carmencita Himalayan Pink Salt (Grinder) 110g", "price": 291.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001149", "brand": "Carmencita", "name": "Carmencita Himalayan Pink Salt (Grinder) 370g", "price": 381.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000148", "brand": "Carmencita", "name": "Carmencita Hot Paprika 75g", "price": 186.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001275", "brand": "Carmencita", "name": "Carmencita Lemon tea 15g", "price": 65.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001180", "brand": "Carmencita", "name": "Carmencita Marisco Dry Paella Stock 50g", "price": 189.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001450", "brand": "Carmencita", "name": "Carmencita Mediterranian Sea Salt w/ Saffron 110g", "price": 270.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001453", "brand": "Carmencita", "name": "Carmencita Mediterranian Sea Salt w/ Saffron 360g", "price": 542.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001449", "brand": "Carmencita", "name": "Carmencita Mediterranian Sea Salt w/ Truffle 112g", "price": 235.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001452", "brand": "Carmencita", "name": "Carmencita Mediterranian Sea Salt w/ Truffle 360g", "price": 540.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001334", "brand": "Carmencita", "name": "Carmencita Miditerranean (Fish) Grinder 66g", "price": 295.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000147", "brand": "Carmencita", "name": "Carmencita Mild Paprika (Dulce) 75g", "price": 176.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000153", "brand": "Carmencita", "name": "Carmencita Mixed Peppercorn 40g", "price": 281.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001410", "brand": "Carmencita", "name": "Carmencita Paella Seasosing 65g", "price": 117.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000140", "brand": "Carmencita", "name": "Carmencita Paellero Marinera 12g", "price": 175.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000141", "brand": "Carmencita", "name": "Carmencita Paellero Valenciana 12g", "price": 175.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000139", "brand": "Carmencita", "name": "Carmencita Paellero with Saffron 20g", "price": 179.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001562", "brand": "Carmencita", "name": "Carmencita pancakes 150g PET", "price": 145.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001556", "brand": "Carmencita", "name": "Carmencita Paprica and Vinegar Seasoning 13.5g", "price": 85.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000156", "brand": "Carmencita", "name": "Carmencita Pasta and Pizza Seasoning 68g", "price": 241.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001185", "brand": "Carmencita", "name": "Carmencita pepper mint tea 10 ud. 15g", "price": 60.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001547", "brand": "Carmencita", "name": "Carmencita Pinenuts 50g Glass Jar", "price": 395.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001370", "brand": "Carmencita", "name": "Carmencita Red Fruits Tea (Frutos rojos) 15g", "price": 70.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001456", "brand": "Carmencita", "name": "Carmencita Rooibos Vanilla 15g", "price": 94.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000154", "brand": "Carmencita", "name": "Carmencita Sea Salt with Herbs 95g", "price": 191.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001368", "brand": "Carmencita", "name": "Carmencita Seafood Paella Kit 255g", "price": 485.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001337", "brand": "Carmencita", "name": "Carmencita Seafood Paella Kit in Pan 255g", "price": 1050.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001335", "brand": "Carmencita", "name": "Carmencita Seasoning Iberian(Steak)Mix Grinder 66g", "price": 245.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001399", "brand": "Carmencita", "name": "Carmencita Smoked Spanish Paprika 470g", "price": 690.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001258", "brand": "Carmencita", "name": "Carmencita Smoked Spanish Paprika 75g", "price": 233.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001414", "brand": "Carmencita", "name": "Carmencita Stevia 54g", "price": 130.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001415", "brand": "Carmencita", "name": "Carmencita Stevia 9g", "price": 138.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000143", "brand": "Carmencita", "name": "Carmencita Stigmas Saffron 0.375g", "price": 291.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001544", "brand": "Carmencita", "name": "Carmencita Sweet Coffee 40g Glass Jar", "price": 155.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001553", "brand": "Carmencita", "name": "Carmencita Teriyaki oven Baked 60g", "price": 140.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001545", "brand": "Carmencita", "name": "Carmencita Thai Coffee 40g Glass Jar", "price": 155.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001365", "brand": "Carmencita", "name": "Carmencita Vegetable Paella Kit 256g", "price": 485.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001419", "brand": "Carmencita", "name": "Carmencita Vegetable Paella Kit in Pan 256g", "price": 1050.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000151", "brand": "Carmencita", "name": "Carmencita White Pepper 55g", "price": 256.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001555", "brand": "Carmencita", "name": "Carmencta Cheese Seasoning 13.25g case 3 Sachets", "price": 85.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001425", "brand": "D'Amico", "name": "D'Amico Artichokes Pesto 130g", "price": 125.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001376", "brand": "D'Amico", "name": "D'Amico Basil Pesto Sauce 130g", "price": 160.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001373", "brand": "D'Amico", "name": "D'Amico Black Truffle Cream 130g", "price": 290.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001428", "brand": "D'Amico", "name": "D'Amico Small Capers Vinegar Pickled No. 7 200g", "price": 175.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001375", "brand": "D'Amico", "name": "D'Amico Sundried Tomatoes Calabrian Style 280g", "price": 190.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001426", "brand": "D'Amico", "name": "D'Amico Sundried Tomatoes Pesto Creamy Sauce 130g", "price": 125.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001374", "brand": "D'Amico", "name": "D'Amico Tuna Stuffed Peppers 190g", "price": 302.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000130", "brand": "Divella", "name": "Divella Canneloni 84 250g", "price": 89.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000119", "brand": "Divella", "name": "Divella Capellini #11, 500g", "price": 79.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001118", "brand": "Divella", "name": "Divella Delifree Fusilli 400g", "price": 199.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001117", "brand": "Divella", "name": "Divella Delifree Penne 400g", "price": 199.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP001116", "brand": "Divella", "name": "Divella Delifree Spaghetti 400g", "price": 199.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000129", "brand": "Divella", "name": "Divella Farfalle 85 (Ribbon) 500g", "price": 109.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000135", "brand": "Divella", "name": "Divella Farfalle Tricolore 85/", "price": 121.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000120", "brand": "Divella", "name": "Divella Fettuccine #12 flat 500g", "price": 98.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000128", "brand": "Divella", "name": "Divella Fusili 40 (Cork Screw) 500g", "price": 79.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000134", "brand": "Divella", "name": "Divella Fusili Tricolore40/1 (Cork Screw) 500g", "price": 121.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000137", "brand": "Divella", "name": "Divella Fusilli 40 Whole Wheat 500g", "price": 109.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000367", "brand": "Divella", "name": "Divella Lasagne Semola 500g", "price": 195.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000132", "brand": "Divella", "name": "Divella Lasagnoni 87 500g", "price": 199.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000121", "brand": "Divella", "name": "Divella Linguine #14, 500g", "price": 79.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000138", "brand": "Divella", "name": "Divella Penne Ziti Rigate 27 Whole Wheat 500g", "price": 109.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000271", "brand": "Divella", "name": "Divella Rigatoni 500g", "price": 79.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000116", "brand": "Divella", "name": "Divella Spaghetti Ristorante #8, 500 g", "price": 79.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000133", "brand": "Divella", "name": "Divella Spaghetti Tricolore 8/1, 500g", "price": 121.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000125", "brand": "Divella", "name": "Divella Tagliatelle 91 500g", "price": 118.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}, {"item_code": "IMP000124", "brand": "Divella", "name": "Divella Tofe #54 , 500g", "price": 79.0, "offer": "Discounted", "expiry": "", "category": "", "barcode": ""}];
+const KEY="om_pricelist_v1";
+const store={get(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}},
+             set(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}};
+let state = {rows:SAMPLE, updated:`${SAMPLE.length} products`};
+let offerFilter="ALL";
+
+const peso=n=>"₱"+Number(n||0).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const isB1=r=>/b1t1|buy\s*1/i.test(r.offer||"");
+const isNear=r=>/near/i.test(r.expiry||"");
+
+/* ---------- Catalog ---------- */
+const q=document.getElementById("q"), brandSel=document.getElementById("brandSel"), sortSel=document.getElementById("sortSel");
+function setOffer(v){offerFilter=v;document.querySelectorAll(".pills button").forEach(b=>b.classList.toggle("active",b.dataset.offer===v));renderCards();}
+document.querySelectorAll(".pills button").forEach(b=>b.onclick=()=>setOffer(b.dataset.offer));
+[q,brandSel,sortSel].forEach(el=>el.addEventListener("input",renderCards));
+
+function renderCatalogMeta(){
+  const brands=[...new Set(state.rows.map(r=>r.brand).filter(Boolean))].sort();
+  const cur=brandSel.value;
+  brandSel.innerHTML='<option value="">All brands</option>'+brands.map(b=>`<option${b===cur?" selected":""}>${esc(b)}</option>`).join("");
+  const b1=state.rows.filter(isB1).length;
+  document.getElementById("b1t1Blurb").textContent=`Discover ${b1} selected offers and get two items for the price of one.`;
+}
+function renderCards(){
+  const term=q.value.trim().toLowerCase(), br=brandSel.value;
+  let R=state.rows.filter(r=>{
+    if(offerFilter==="B1T1"&&!isB1(r))return false;
+    if(offerFilter==="NEAR"&&!isNear(r))return false;
+    if(br&&r.brand!==br)return false;
+    if(term&&!`${r.name} ${r.brand} ${r.item_code}`.toLowerCase().includes(term))return false;
+    return true;});
+  const s=sortSel.value;
+  R=[...R].sort((a,b)=> s==="priceAsc"?a.price-b.price : s==="priceDesc"?b.price-a.price :
+     s==="name"?String(a.name).localeCompare(b.name) : (isB1(b)-isB1(a))||String(a.brand).localeCompare(b.brand));
+  document.getElementById("count").textContent=`${R.length} product${R.length===1?"":"s"} found`;
+  document.getElementById("cards").innerHTML=R.length?R.map(r=>`<div class="card">
+      <span class="tag ${isB1(r)?"":"disc"}">${isB1(r)?"Buy 1, Take 1":"Discounted"}</span>
+      <div class="brand">${esc(r.brand)}</div><div class="pname">${esc(r.name)}</div>
+      <div class="code">${esc(r.item_code)}</div>${isNear(r)?'<span class="chip">Near expiry</span>':""}
+      <div class="price">${peso(r.price)}<small>Wholesale price</small></div></div>`).join("")
+    :'<div class="empty">No products match these filters.</div>';
+}
+
+/* ---------- Data tab ---------- */
+const COLS=["item_code","brand","name","price","offer","expiry","category","barcode"];
+function parseCSV(text){
+  const rows=[];let row=[],f="",inQ=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(inQ){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else inQ=false}else f+=c}
+    else if(c==='"')inQ=true; else if(c===","){row.push(f);f=""}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&text[i+1]==="\n")i++;row.push(f);rows.push(row);row=[];f=""}
+    else f+=c;}
+  if(f||row.length){row.push(f);rows.push(row)}
+  return rows.filter(r=>r.some(x=>x.trim()!==""));
+}
+function renderAll(){renderCatalogMeta();renderCards();document.getElementById("lastUpdated").textContent=state.updated;}
+renderAll();
+
+/* Load pricelist.csv from the same folder (GitHub Pages) */
+fetch("pricelist.csv",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.text();}).then(t=>{
+  const rows=parseCSV(t.replace(/^\uFEFF/,""));
+  const hdr=rows[0].map(h=>h.trim().toLowerCase().replace(/\s+/g,"_"));
+  const data=rows.slice(1).map(r=>{const o={};hdr.forEach((h,i)=>o[h]=(r[i]||"").trim());
+    o.price=parseFloat(String(o.price).replace(/[₱,\s]/g,""))||0;return o;}).filter(o=>o.item_code||o.name);
+  if(data.length){state={rows:data,updated:`${data.length} products`};renderAll();}
+}).catch(()=>{state.updated=`${SAMPLE.length} products`;renderAll();});
+
+/* ---------- QR / Barcode scanner ---------- */
+const modal=document.getElementById("scanModal"), video=document.getElementById("video"),
+      statusEl=document.getElementById("scanStatus"), resultEl=document.getElementById("scanResult");
+let stream=null, detector=null, loopId=null, facing="environment", lastHit="", lastHitAt=0, history=[];
+const FORMATS=["qr_code","ean_13","ean_8","upc_a","upc_e","code_128","code_39","itf"];
+
+async function getDetector(){
+  if(detector) return detector;
+  if("BarcodeDetector" in window){
+    try{
+      const supported=await BarcodeDetector.getSupportedFormats();
+      detector={type:"native",d:new BarcodeDetector({formats:FORMATS.filter(f=>supported.includes(f))})};
+      return detector;
+    }catch(e){}
+  }
+  // Fallback (e.g. iPhone Safari): jsQR — reads QR codes only
+  if(!window.jsQR){
+    await new Promise((ok,fail)=>{const s=document.createElement("script");
+      s.src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";s.onload=ok;s.onerror=fail;document.head.appendChild(s);})
+      .catch(()=>{});
+  }
+  detector=window.jsQR?{type:"jsqr"}:{type:"none"};
+  return detector;
+}
+const cv=document.createElement("canvas"), ctx=cv.getContext("2d",{willReadFrequently:true});
+async function detectFrom(source,w,h){
+  const det=await getDetector();
+  if(det.type==="native"){const r=await det.d.detect(source);return r[0]?.rawValue||null;}
+  if(det.type==="jsqr"){cv.width=w;cv.height=h;ctx.drawImage(source,0,0,w,h);
+    const img=ctx.getImageData(0,0,w,h);const r=jsQR(img.data,w,h);return r?.data||null;}
+  return null;
+}
+
+async function startCam(){
+  stopCam();
+  if(!navigator.mediaDevices?.getUserMedia){statusEl.textContent="Camera not available here — use 'Scan from photo' or type the code.";return;}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});
+    video.srcObject=stream; await video.play();
+    const det=await getDetector();
+    statusEl.textContent=det.type==="native"?"Point at a QR code or barcode":det.type==="jsqr"?"Point at a QR code (barcodes not supported on this browser)":"Scanner unavailable — type the code below";
+    loop();
+  }catch(e){statusEl.textContent="Camera blocked. Allow camera access, or use 'Scan from photo'.";}
+}
+function stopCam(){cancelAnimationFrame(loopId);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
+let busy=false;
+async function loop(){
+  if(!stream)return;
+  if(!busy&&video.readyState>=2){
+    busy=true;
+    try{const val=await detectFrom(video,video.videoWidth,video.videoHeight);if(val)onScan(val);}catch(e){}
+    busy=false;
+  }
+  loopId=requestAnimationFrame(loop);
+}
+
+function findProduct(raw){
+  const v=String(raw).trim(), up=v.toUpperCase();
+  const R=state.rows;
+  return R.find(r=>String(r.item_code).toUpperCase()===up)
+      || R.find(r=>r.barcode&&String(r.barcode).trim()===v)
+      || R.find(r=>r.item_code&&up.includes(String(r.item_code).toUpperCase()))   // QR holding a URL or text with the code
+      || null;
+}
+function onScan(raw){
+  const now=Date.now();
+  if(raw===lastHit&&now-lastHitAt<2500)return;   // ignore repeat reads
+  lastHit=raw;lastHitAt=now;
+  if(navigator.vibrate)navigator.vibrate(60);
+  showResult(raw);
+}
+function showResult(raw){
+  const p=findProduct(raw);
+  history=[raw,...history.filter(h=>h!==raw)].slice(0,6);
+  document.getElementById("scanHistory").innerHTML=history.length?"Recent: "+history.map(h=>`<span data-h="${esc(h)}">${esc(h.length>24?h.slice(0,24)+"…":h)}</span>`).join(""):"";
+  if(!p){resultEl.innerHTML=`<div class="miss">No product matches <b>${esc(raw)}</b>. Check the code, or add a <code>barcode</code> column to the price list.</div>`;return;}
+  resultEl.innerHTML=`<div class="card">
+    <span class="tag ${isB1(p)?"":"disc"}">${isB1(p)?"Buy 1, Take 1":"Discounted"}</span>
+    <div class="brand">${esc(p.brand)}</div><div class="pname">${esc(p.name)}</div>
+    <div class="code">${esc(p.item_code)}${p.barcode?" · "+esc(p.barcode):""}</div>
+    ${isNear(p)?'<span class="chip">Near expiry</span>':""}
+    <div class="price">${peso(p.price)}<small>Wholesale price</small></div></div>
+    <button class="btn primary" style="width:100%;margin-top:8px" id="showInCat">Show in catalog</button>`;
+  document.getElementById("showInCat").onclick=()=>{
+    closeScan();
+    setOffer("ALL"); brandSel.value=""; q.value=p.item_code; renderCards();
+    const c=document.querySelector("#cards .card"); if(c){c.classList.add("flash");c.scrollIntoView({behavior:"smooth",block:"center"});}
+  };
+}
+document.getElementById("scanHistory").onclick=e=>{const h=e.target.dataset?.h;if(h)showResult(h);};
+
+function closeScan(){modal.classList.remove("open");stopCam();}
+document.getElementById("openScan").onclick=()=>{modal.classList.add("open");resultEl.innerHTML="";startCam();};
+document.getElementById("closeScan").onclick=closeScan;
+modal.addEventListener("click",e=>{if(e.target===modal)closeScan();});
+document.getElementById("camBtn").onclick=()=>{facing=facing==="environment"?"user":"environment";startCam();};
+document.getElementById("manualGo").onclick=()=>{const v=document.getElementById("manual").value;if(v.trim())showResult(v);};
+document.getElementById("manual").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("manualGo").click();});
+document.getElementById("imgIn").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;e.target.value="";
+  const img=new Image();img.src=URL.createObjectURL(f);await img.decode();
+  const scale=Math.min(1,1200/Math.max(img.width,img.height));
+  const val=await detectFrom(img,Math.round(img.width*scale),Math.round(img.height*scale)).catch(()=>null);
+  val?showResult(val):resultEl.innerHTML='<div class="miss">No QR code or barcode found in that photo. Try a closer, sharper shot.</div>';
+};
+</script>
+</body>
+</html>
